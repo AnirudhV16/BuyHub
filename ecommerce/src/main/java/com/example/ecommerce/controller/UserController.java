@@ -15,25 +15,25 @@ import org.springframework.security.core.Authentication;
 
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api")
 public class UserController {
 	
 	@Autowired
 	private UserService userService;
 
-	@PostMapping("/register")
+	@PostMapping("/user/register")
 	public User register(@RequestBody User user) {
 		return userService.register(user);
 	}
 	
-	@PostMapping("/login")
+	@PostMapping("/user/login")
 	public String login(@RequestBody User user) {
 		String token = userService.verify(user);
 		System.out.println(token);
 		return token;
 	}
 	
-	@GetMapping("/")
+	@GetMapping("/user/")
 	public String home(){
 		return "welcome home :)";
 	}
