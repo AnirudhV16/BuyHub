@@ -1,5 +1,7 @@
 package com.example.ecommerce.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 
 //User.java
@@ -18,6 +20,18 @@ public class User {
  private Role role;
 
  private boolean enabled = true;
+
+ @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+ @JsonIgnore
+ private Cart cart;
+ 
+ public Cart getCart() {
+	return cart;
+}
+
+ public void setCart(Cart cart) {
+	this.cart = cart;
+ }
 
  public User() {
  }
