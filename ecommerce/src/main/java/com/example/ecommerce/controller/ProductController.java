@@ -1,10 +1,10 @@
 package com.example.ecommerce.controller;
 
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import com.example.ecommerce.entity.Product;
+import com.example.ecommerce.dto.ProductDTO;
 import com.example.ecommerce.service.ProductService;
 
 import java.util.List;
@@ -19,20 +19,20 @@ public class ProductController {
         this.productService = productService;
     }
 
-    // Add new product (Admin only)
+    // ✅ Add new product (Admin only)
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Product> addProduct(@RequestBody Product product) {
-        return ResponseEntity.ok(productService.saveProduct(product));
+    public ResponseEntity<ProductDTO> addProduct(@RequestBody ProductDTO productDTO) {
+        return ResponseEntity.ok(productService.saveProduct(productDTO));
     }
 
-    // Get all products (Anyone)
+    // ✅ Get all products (Anyone)
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
+    public ResponseEntity<List<ProductDTO>> getAllProducts() {
         return ResponseEntity.ok(productService.getAllProducts());
     }
-    
-    // Delete product (Admin only)
+
+    // ✅ Delete product (Admin only)
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteProduct(@PathVariable int id) {
@@ -44,5 +44,15 @@ public class ProductController {
         }
     }
 
+    // ✅ Update product (Admin only)
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ProductDTO> updateProduct(
+            @PathVariable int id,
+            @RequestBody ProductDTO updatedProduct) {
+        ProductDTO product = productService.updateProduct(id, updatedProduct);
+        return ResponseEntity.ok(product);
+    }
 }
+
 
