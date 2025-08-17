@@ -1,5 +1,7 @@
 package com.example.ecommerce.service;
 
+import com.example.ecommerce.dto.CartDTO;
+import com.example.ecommerce.dto.CartItemDTO;
 import com.example.ecommerce.entity.Cart;
 import com.example.ecommerce.entity.CartItem;
 import com.example.ecommerce.entity.Product;
@@ -9,6 +11,7 @@ import com.example.ecommerce.repository.ProductRepository;
 import com.example.ecommerce.repository.UserRepository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,30 +31,24 @@ public class CartService {
         this.userRepository = userRepository;
     }
 
-    /**
-     * Create a new cart for a user (if they don’t already have one).
-     */
     @Transactional
-    public Cart createCart(Long userId) {
+    public CartDTO createCart(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
         if (user.getCart() != null) {
-            return user.getCart();
+            return new CartDTO(user.getCart());
         }
 
         Cart cart = new Cart();
         cart.setUser(user);
         user.setCart(cart);
 
-        return cartRepository.save(cart);
+        return new CartDTO(cartRepository.save(cart));
     }
 
-    /**
-     * Add product to cart
-     */
     @Transactional
-    public Cart addProductToCart(int cartId, int productId, int quantity) {
+    public CartDTO addProductToCart(int cartId, int productId, int quantity) {
         Cart cart = cartRepository.findById(cartId)
                 .orElseThrow(() -> new RuntimeException("Cart not found with ID: " + cartId));
 
@@ -73,14 +70,11 @@ public class CartService {
             cart.addItem(item);
         }
 
-        return cartRepository.save(cart);
+        return new CartDTO(cartRepository.save(cart));
     }
 
-    /**
-     * Remove product from cart
-     */
     @Transactional
-    public Cart removeProductFromCart(int cartId, int productId) {
+    public CartDTO removeProductFromCart(int cartId, int productId) {
         Cart cart = cartRepository.findById(cartId)
                 .orElseThrow(() -> new RuntimeException("Cart not found with ID: " + cartId));
 
@@ -90,41 +84,34 @@ public class CartService {
             throw new RuntimeException("Product not found in cart with ID: " + productId);
         }
 
-        return cartRepository.save(cart);
+        return new CartDTO(cartRepository.save(cart));
     }
 
-    /**
-     * Get all items in a cart
-     */
     @Transactional(readOnly = true)
-    public List<CartItem> getCartItems(int cartId) {
+    public List<CartItemDTO> getCartItems(int cartId) {
         Cart cart = cartRepository.findById(cartId)
                 .orElseThrow(() -> new RuntimeException("Cart not found with ID: " + cartId));
-        return cart.getItems();
+
+        return cart.getItems().stream()
+                   .map(CartItemDTO::new)
+                   .collect(Collectors.toList());
     }
 
-    /**
-     * Get cart by ID
-     */
     @Transactional(readOnly = true)
-    public Cart getCartById(int cartId) {
-        return cartRepository.findById(cartId)
+    public CartDTO getCartById(int cartId) {
+        Cart cart = cartRepository.findById(cartId)
                 .orElseThrow(() -> new RuntimeException("Cart not found with ID: " + cartId));
+        return new CartDTO(cart);
     }
 
-    /**
-     * Get a user’s cart by userId (creates new if not exists)
-     */
     @Transactional
-    public Cart getCartByUserId(Long userId) {
+    public CartDTO getCartByUserId(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
         if (user.getCart() == null) {
             return createCart(userId);
         }
-        return user.getCart();
+        return new CartDTO(user.getCart());
     }
 }
-
-
