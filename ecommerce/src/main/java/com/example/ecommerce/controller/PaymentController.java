@@ -1,6 +1,9 @@
 package com.example.ecommerce.controller;
 
+import com.example.ecommerce.dto.PaymentRequest;
+import com.example.ecommerce.dto.PaymentResponse;
 import com.example.ecommerce.service.PaymentService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,24 +18,32 @@ public class PaymentController {
 
     // ✅ Create Razorpay order and map to DB order
     @PostMapping("/create-order/{dbOrderId}/{amount}")
-    public String createOrder(@PathVariable int dbOrderId, @PathVariable double amount) throws Exception {
-        return paymentService.createOrder(amount, dbOrderId);
+    public ResponseEntity<?> createOrder(@PathVariable int dbOrderId, @PathVariable double amount) {
+        try {
+            PaymentResponse response = paymentService.createOrder(amount, dbOrderId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error creating order: " + e.getMessage());
+        }
     }
 
     // ✅ Verify payment
     @PostMapping("/verify")
-    public String verifyPayment(@RequestParam String razorpayOrderId,
-                                @RequestParam String paymentId,
-                                @RequestParam String signature) {
+    public ResponseEntity<?> verifyPayment(@RequestBody PaymentRequest request) {
         try {
-            boolean isValid = paymentService.verifyPayment(razorpayOrderId, paymentId, signature);
+            boolean isValid = paymentService.verifyPayment(
+                    request.getRazorpayOrderId(),
+                    request.getPaymentId(),
+                    request.getSignature()
+            );
             if (isValid) {
-                return "Payment verified successfully!";
+                return ResponseEntity.ok("Payment verified successfully!");
             } else {
-                return "Payment verification failed!";
+                return ResponseEntity.badRequest().body("Payment verification failed!");
             }
         } catch (Exception e) {
-            return "Error verifying payment: " + e.getMessage();
+            return ResponseEntity.internalServerError().body("Error verifying payment: " + e.getMessage());
         }
     }
 }
+

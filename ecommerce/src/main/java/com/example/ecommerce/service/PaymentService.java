@@ -1,17 +1,17 @@
 package com.example.ecommerce.service;
 
+import com.example.ecommerce.dto.PaymentResponse;
 import com.example.ecommerce.entity.Order;
 import com.example.ecommerce.repository.OrderRepository;
 import com.razorpay.RazorpayClient;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.apache.commons.codec.binary.Hex;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
 @Service
 public class PaymentService {
@@ -26,11 +26,11 @@ public class PaymentService {
     private String razorpayKeySecret;
 
     // ✅ Create Razorpay Order and save mapping in DB
-    public String createOrder(double amount, int dbOrderId) throws Exception {
+    public PaymentResponse createOrder(double amount, int dbOrderId) throws Exception {
         RazorpayClient razorpay = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
 
         JSONObject options = new JSONObject();
-        options.put("amount", (int)(amount * 100)); // amount in paise (INR)
+        options.put("amount", (int)(amount * 100)); // amount in paise
         options.put("currency", "INR");
         options.put("receipt", "txn_" + System.currentTimeMillis());
 
@@ -43,7 +43,13 @@ public class PaymentService {
         order.setStatus("CREATED");
         orderRepository.save(order);
 
-        return razorpayOrder.toString(); // JSON response with Razorpay order_id
+        // ✅ Return structured response
+        return new PaymentResponse(
+                razorpayOrder.get("id"),
+                razorpayOrder.get("amount"),
+                razorpayOrder.get("currency"),
+                razorpayKeyId  // needed by frontend
+        );
     }
 
     // ✅ Verify Payment Signature & Update DB
@@ -52,7 +58,6 @@ public class PaymentService {
         String generatedSignature = HmacSHA256(data, razorpayKeySecret);
 
         if (generatedSignature.equals(signature)) {
-            // ✅ Payment successful
             Order order = orderRepository.findByRazorpayOrderId(razorpayOrderId)
                     .orElseThrow(() -> new RuntimeException("Order not found with razorpayOrderId: " + razorpayOrderId));
 
@@ -73,3 +78,4 @@ public class PaymentService {
         return new String(Hex.encodeHex(hash));
     }
 }
+
