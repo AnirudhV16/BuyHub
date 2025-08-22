@@ -58,9 +58,10 @@ public class PaymentService {
         String generatedSignature = HmacSHA256(data, razorpayKeySecret);
 
         if (generatedSignature.equals(signature)) {
-            Order order = orderRepository.findByRazorpayOrderId(razorpayOrderId)
-                    .orElseThrow(() -> new RuntimeException("Order not found with razorpayOrderId: " + razorpayOrderId));
-
+            Order order = orderRepository.findByRazorpayOrderId(razorpayOrderId);
+    		if (order == null) {
+    		    throw new RuntimeException("Order not found with razorpayOrderId: " + razorpayOrderId);
+    		}
             order.setStatus("PAID");
             order.setRazorpayPaymentId(paymentId);
             orderRepository.save(order);

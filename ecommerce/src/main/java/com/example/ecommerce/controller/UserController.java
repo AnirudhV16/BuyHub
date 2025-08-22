@@ -13,7 +13,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 
-
 @RestController
 @RequestMapping("/api")
 public class UserController {
@@ -29,7 +28,6 @@ public class UserController {
 	@PostMapping("/user/login")
 	public String login(@RequestBody User user) {
 		String token = userService.verify(user);
-		System.out.println(token);
 		return token;
 	}
 	

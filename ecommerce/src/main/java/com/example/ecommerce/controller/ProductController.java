@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.annotation.security.PermitAll;
 
 import java.util.List;
 
@@ -44,7 +45,7 @@ public class ProductController {
 
     // Get all products (Anyone)
     @GetMapping
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PermitAll
     public ResponseEntity<List<Product>> getAllProducts() {
         return ResponseEntity.ok(productService.getAllProducts());
     }
