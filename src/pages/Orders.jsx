@@ -3,49 +3,49 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import Loading from "../components/Loading";
+import api from "../services/api"; // ✅ use your pre-configured api instance
 import "./Orders.css";
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const { user } = useAuth();
+  const [selectedStatus, setSelectedStatus] = useState("ALL");
+  const { user } = useAuth(); // ✅ no need to get token, api.js handles it
 
   useEffect(() => {
-    // Since there's no get orders endpoint in the backend,
-    // we'll simulate some order data for display purposes
-    setTimeout(() => {
-      setOrders([
-        {
-          id: 1,
-          orderDate: "2024-01-15",
-          status: "DELIVERED",
-          totalAmount: 129.99,
-          items: [
-            { productName: "Wireless Headphones", quantity: 1, price: 99.99 },
-            { productName: "Phone Case", quantity: 2, price: 15.0 },
-          ],
-        },
-        {
-          id: 2,
-          orderDate: "2024-01-20",
-          status: "SHIPPED",
-          totalAmount: 89.99,
-          items: [
-            { productName: "Bluetooth Speaker", quantity: 1, price: 89.99 },
-          ],
-        },
-        {
-          id: 3,
-          orderDate: "2024-01-25",
-          status: "PROCESSING",
-          totalAmount: 199.99,
-          items: [{ productName: "Smart Watch", quantity: 1, price: 199.99 }],
-        },
-      ]);
+    if (user && user.id) {
+      fetchOrders();
+    }
+  }, [user, selectedStatus]);
+
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      // ✅ Just call api (no need for headers, token is auto-attached)
+      const response = await api.get(`/api/orders/user/${user.id}`);
+
+      let filteredOrders = response.data;
+      if (selectedStatus !== "ALL") {
+        filteredOrders = response.data.filter(
+          (order) => order.status === selectedStatus
+        );
+      }
+
+      setOrders(filteredOrders);
+    } catch (err) {
+      console.error("Error fetching orders:", err);
+      setError("Failed to load orders. Please try again.");
+    } finally {
       setLoading(false);
-    }, 1000);
-  }, []);
+    }
+  };
+
+  const handleStatusFilter = (status) => {
+    setSelectedStatus(status);
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -53,8 +53,12 @@ const Orders = () => {
         return "#28a745";
       case "SHIPPED":
         return "#17a2b8";
+      case "PAID":
+        return "#007bff";
       case "PROCESSING":
         return "#ffc107";
+      case "PENDING":
+        return "#6c757d";
       case "CANCELLED":
         return "#dc3545";
       default:
@@ -67,7 +71,21 @@ const Orders = () => {
       year: "numeric",
       month: "long",
       day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
+  };
+
+  const getStatusText = (status) => {
+    const statusMap = {
+      PENDING: "Order Placed",
+      PAID: "Payment Confirmed",
+      PROCESSING: "Being Prepared",
+      SHIPPED: "On the Way",
+      DELIVERED: "Delivered",
+      CANCELLED: "Cancelled",
+    };
+    return statusMap[status] || status;
   };
 
   if (loading) return <Loading />;
@@ -79,18 +97,43 @@ const Orders = () => {
         <p>Track and manage your order history</p>
       </div>
 
+      {/* Status Filter */}
+      <div className="status-filter">
+        {["ALL", "PENDING", "PAID", "SHIPPED", "DELIVERED"].map((status) => (
+          <button
+            key={status}
+            className={selectedStatus === status ? "active" : ""}
+            onClick={() => handleStatusFilter(status)}
+          >
+            {status === "ALL"
+              ? "All Orders"
+              : status.charAt(0) + status.slice(1).toLowerCase()}
+          </button>
+        ))}
+      </div>
+
       {error && <div className="error-message">{error}</div>}
 
       {orders.length === 0 ? (
         <div className="no-orders">
-          <h2>No orders found</h2>
-          <p>You haven't placed any orders yet.</p>
-          <button
-            className="start-shopping-btn"
-            onClick={() => (window.location.href = "/products")}
-          >
-            Start Shopping
-          </button>
+          <h2>
+            {selectedStatus === "ALL"
+              ? "No orders found"
+              : `No ${selectedStatus.toLowerCase()} orders found`}
+          </h2>
+          <p>
+            {selectedStatus === "ALL"
+              ? "You haven't placed any orders yet."
+              : `You don't have any ${selectedStatus.toLowerCase()} orders.`}
+          </p>
+          {selectedStatus === "ALL" && (
+            <button
+              className="start-shopping-btn"
+              onClick={() => (window.location.href = "/products")}
+            >
+              Start Shopping
+            </button>
+          )}
         </div>
       ) : (
         <div className="orders-list">
@@ -106,38 +149,112 @@ const Orders = () => {
                     className="status-badge"
                     style={{ backgroundColor: getStatusColor(order.status) }}
                   >
-                    {order.status}
+                    {getStatusText(order.status)}
                   </span>
                 </div>
               </div>
 
               <div className="order-items">
-                <h4>Items:</h4>
-                {order.items.map((item, index) => (
+                <h4>Items ({order.orderItems?.length || 0}):</h4>
+                {order.orderItems?.map((item, index) => (
                   <div key={index} className="order-item">
                     <div className="item-details">
-                      <span className="item-name">{item.productName}</span>
+                      <div className="item-info">
+                        <span className="item-name">{item.product.name}</span>
+                        <span className="item-description">
+                          {item.product.description}
+                        </span>
+                      </div>
                       <span className="item-quantity">
                         Qty: {item.quantity}
                       </span>
                     </div>
-                    <div className="item-price">${item.price.toFixed(2)}</div>
+                    <div className="item-price">
+                      ${(item.price * item.quantity).toFixed(2)}
+                      <span className="unit-price">
+                        (${item.price.toFixed(2)} each)
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
 
               <div className="order-footer">
                 <div className="order-total">
-                  <strong>Total: ${order.totalAmount.toFixed(2)}</strong>
+                  <strong>Total: ${order.totalPrice.toFixed(2)}</strong>
                 </div>
                 <div className="order-actions">
-                  {order.status === "PROCESSING" && (
+                  {order.status === "PENDING" && (
                     <button className="cancel-order-btn">Cancel Order</button>
                   )}
                   {order.status === "DELIVERED" && (
                     <button className="reorder-btn">Reorder</button>
                   )}
                   <button className="view-details-btn">View Details</button>
+                </div>
+              </div>
+
+              {/* Order Progress Indicator */}
+              <div className="order-progress">
+                <div className="progress-steps">
+                  <div
+                    className={`step ${
+                      [
+                        "PENDING",
+                        "PAID",
+                        "PROCESSING",
+                        "SHIPPED",
+                        "DELIVERED",
+                      ].includes(order.status)
+                        ? "completed"
+                        : ""
+                    }`}
+                  >
+                    <div className="step-icon">📝</div>
+                    <span>Ordered</span>
+                  </div>
+                  <div
+                    className={`step ${
+                      ["PAID", "PROCESSING", "SHIPPED", "DELIVERED"].includes(
+                        order.status
+                      )
+                        ? "completed"
+                        : ""
+                    }`}
+                  >
+                    <div className="step-icon">💳</div>
+                    <span>Paid</span>
+                  </div>
+                  <div
+                    className={`step ${
+                      ["PROCESSING", "SHIPPED", "DELIVERED"].includes(
+                        order.status
+                      )
+                        ? "completed"
+                        : ""
+                    }`}
+                  >
+                    <div className="step-icon">📦</div>
+                    <span>Processing</span>
+                  </div>
+                  <div
+                    className={`step ${
+                      ["SHIPPED", "DELIVERED"].includes(order.status)
+                        ? "completed"
+                        : ""
+                    }`}
+                  >
+                    <div className="step-icon">🚚</div>
+                    <span>Shipped</span>
+                  </div>
+                  <div
+                    className={`step ${
+                      order.status === "DELIVERED" ? "completed" : ""
+                    }`}
+                  >
+                    <div className="step-icon">✅</div>
+                    <span>Delivered</span>
+                  </div>
                 </div>
               </div>
             </div>

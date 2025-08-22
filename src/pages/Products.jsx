@@ -39,6 +39,9 @@ const Products = () => {
     }
   };
 
+  // helper function to check if user is admin
+  const isAdmin = user?.roles?.includes("ROLE_ADMIN");
+
   if (loading) return <Loading />;
 
   return (
@@ -64,10 +67,9 @@ const Products = () => {
               <h3 className="product-name">{product.name}</h3>
               <p className="product-description">{product.description}</p>
               <div className="product-price">${product.price}</div>
-              <div className="product-stock">
-                Stock: {product.stockQuantity}
-              </div>
-              {user && (
+
+              {/* Show Add to Cart only if user is not admin */}
+              {user && !isAdmin && (
                 <button
                   className="add-to-cart-btn"
                   onClick={() => handleAddToCart(product.id)}

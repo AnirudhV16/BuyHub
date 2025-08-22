@@ -36,9 +36,6 @@ const Home = () => {
                     <Link to="/admin" className="btn btn-primary">
                       Admin Dashboard
                     </Link>
-                    <Link to="/admin/products" className="btn btn-secondary">
-                      Manage Products
-                    </Link>
                   </>
                 ) : (
                   <>
