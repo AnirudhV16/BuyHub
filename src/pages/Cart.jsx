@@ -25,7 +25,12 @@ const Cart = () => {
 
   const fetchCartItems = async () => {
     try {
-      const response = await api.get(`/cart/${cartId}/items`);
+      const response = await api.get(`/api/cart/${cartId}/items`);
+      // Print the entire response
+      console.log("Full API Response:", response);
+
+      // Print just the data
+      console.log("Cart Items Data:", response.data);
       setCartItems(response.data);
       setSelectedItems(response.data.map((item) => item.id));
     } catch (err) {
@@ -38,9 +43,10 @@ const Cart = () => {
 
   const handleRemoveItem = async (productId) => {
     try {
-      await api.delete(`/cart/${cartId}/remove/${productId}`);
+      await api.delete(`/api/cart/${cartId}/remove/${productId}`);
       await fetchCartItems();
     } catch (err) {
+      console.error("Remove item error:", err);
       alert("Failed to remove item from cart");
     }
   };
@@ -63,8 +69,8 @@ const Cart = () => {
 
   const calculateTotal = () => {
     return cartItems
-      .filter((item) => selectedItems.includes(item.id))
-      .reduce((total, item) => total + item.product.price * item.quantity, 0)
+      .filter((item) => selectedItems.includes(item.id) && item.price)
+      .reduce((total, item) => total + item.price * item.quantity, 0)
       .toFixed(2);
   };
 
@@ -76,7 +82,7 @@ const Cart = () => {
 
     try {
       const response = await api.post(
-        `/orders/cart/${cartId}/items`,
+        `/api/orders/cart/${cartId}/items`,
         selectedItems
       );
       const order = response.data;
@@ -118,44 +124,66 @@ const Cart = () => {
       ) : (
         <div className="cart-content">
           <div className="cart-items">
-            {cartItems.map((item) => (
-              <div key={item.id} className="cart-item">
-                <div className="item-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={selectedItems.includes(item.id)}
-                    onChange={() => handleItemSelect(item.id)}
-                  />
+            {cartItems.map((item) => {
+              // Check if we have essential product information
+              if (!item.productName || item.price === undefined) {
+                return (
+                  <div key={item.id} className="cart-item error-item">
+                    <div className="item-details">
+                      <h3>Product Unavailable</h3>
+                      <p>This product is no longer available</p>
+                    </div>
+                    <button
+                      className="remove-btn"
+                      onClick={() => handleRemoveItem(item.productId)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                );
+              }
+
+              return (
+                <div key={item.id} className="cart-item">
+                  <div className="item-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={selectedItems.includes(item.id)}
+                      onChange={() => handleItemSelect(item.id)}
+                    />
+                  </div>
+
+                  {item.productImageUrl && (
+                    <img
+                      src={item.productImageUrl}
+                      alt={item.productName}
+                      className="item-image"
+                    />
+                  )}
+
+                  <div className="item-details">
+                    <h3>{item.productName}</h3>
+                    <p>
+                      {item.productDescription || "Description not available"}
+                    </p>
+                    <div className="item-price">${item.price}</div>
+                  </div>
+
+                  <div className="item-quantity">Quantity: {item.quantity}</div>
+
+                  <div className="item-total">
+                    ${(item.price * item.quantity).toFixed(2)}
+                  </div>
+
+                  <button
+                    className="remove-btn"
+                    onClick={() => handleRemoveItem(item.productId)}
+                  >
+                    Remove
+                  </button>
                 </div>
-
-                {item.product.imageUrl && (
-                  <img
-                    src={item.product.imageUrl}
-                    alt={item.product.name}
-                    className="item-image"
-                  />
-                )}
-
-                <div className="item-details">
-                  <h3>{item.product.name}</h3>
-                  <p>{item.product.description}</p>
-                  <div className="item-price">${item.product.price}</div>
-                </div>
-
-                <div className="item-quantity">Quantity: {item.quantity}</div>
-
-                <div className="item-total">
-                  ${(item.product.price * item.quantity).toFixed(2)}
-                </div>
-
-                <button
-                  className="remove-btn"
-                  onClick={() => handleRemoveItem(item.product.id)}
-                >
-                  Remove
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="cart-summary">

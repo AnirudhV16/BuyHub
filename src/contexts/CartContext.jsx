@@ -30,14 +30,19 @@ export const CartProvider = ({ children }) => {
 
   const initializeCart = async () => {
     try {
-      const response = await api.get(`/cart/user/${user.id}`);
+      // Convert user.id to number for backend
+      const userId = Number(user.id);
+
+      const response = await api.get(`/api/cart/user/${userId}`);
       setCartId(response.data.id);
       await updateCartItemCount(response.data.id);
     } catch (error) {
       console.error("Error initializing cart:", error);
+
       // If cart doesn't exist, create one
       try {
-        const createResponse = await api.post(`/cart/create/${user.id}`);
+        const userId = Number(user.id);
+        const createResponse = await api.post(`/api/cart/create/${userId}`);
         setCartId(createResponse.data.id);
       } catch (createError) {
         console.error("Error creating cart:", createError);
@@ -49,7 +54,7 @@ export const CartProvider = ({ children }) => {
     if (!cartIdToUse) return;
 
     try {
-      const response = await api.get(`/cart/${cartIdToUse}/items`);
+      const response = await api.get(`/api/cart/${cartIdToUse}/items`);
       const totalItems = response.data.reduce(
         (sum, item) => sum + item.quantity,
         0
@@ -66,7 +71,9 @@ export const CartProvider = ({ children }) => {
     }
 
     try {
-      await api.post(`/cart/${cartId}/add/${productId}?quantity=${quantity}`);
+      await api.post(
+        `/api/cart/${cartId}/add/${productId}?quantity=${quantity}`
+      );
       await updateCartItemCount();
     } catch (error) {
       console.error("Error adding to cart:", error);
@@ -80,7 +87,7 @@ export const CartProvider = ({ children }) => {
     }
 
     try {
-      await api.delete(`/cart/${cartId}/remove/${productId}`);
+      await api.delete(`/api/cart/${cartId}/remove/${productId}`);
       await updateCartItemCount();
     } catch (error) {
       console.error("Error removing from cart:", error);

@@ -42,11 +42,21 @@ export const AuthProvider = ({ children }) => {
 
         // Decode token to get user info (basic JWT decode)
         const tokenPayload = JSON.parse(atob(receivedToken.split(".")[1]));
+        // Debug: Check what's in the token payload
+        console.log("JWT Token payload:", tokenPayload);
+        console.log("Token authorities:", tokenPayload.authorities);
+        console.log("Token username:", tokenPayload.username);
+
         const userInfo = {
-          id: tokenPayload.sub,
-          username: userData.username,
-          role: tokenPayload.authorities?.[0] || "ROLE_USER",
+          id: parseInt(tokenPayload.sub), // This is now the user ID from database
+          username: tokenPayload.username, // Username from token claims
+          role: tokenPayload.authorities, // Role from token claims
         };
+
+        // Debug: Check the final user info
+        console.log("User info created:", userInfo);
+        console.log("Final role value:", userInfo.role);
+        console.log("Role type:", typeof userInfo.role);
 
         setUser(userInfo);
 
