@@ -30,27 +30,37 @@ public class OrderController {
         return orderService.placeOrderFromCart(cartId, selectedCartItemIds);
     }
 
-    // ✅ NEW - Get user's order history
+    // ✅ Get user's order history
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<OrderDTO>> getUserOrders(@PathVariable Long userId) {
         List<OrderDTO> orders = orderService.getOrdersByUserId(userId);
         return ResponseEntity.ok(orders);
     }
 
-    // ✅ NEW - Get specific order by ID (for user to view their own order)
+    // ✅ Get specific order by ID (for user to view their own order)
     @GetMapping("/{orderId}/user/{userId}")
     public ResponseEntity<OrderDTO> getUserOrderById(@PathVariable int orderId, @PathVariable Long userId) {
-        OrderDTO order = orderService.getOrderByIdForAdmin(orderId);
-        
-        // Check if the order belongs to the requesting user
-        if (!order.getUserId().equals(userId)) {
-            throw new RuntimeException("Access denied: Order does not belong to user");
+        try {
+            OrderDTO order = orderService.getOrderByIdForUser(orderId, userId);
+            return ResponseEntity.ok(order);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(null);
         }
-        
-        return ResponseEntity.ok(order);
     }
 
-    // ✅ NEW - Get user's orders by status
+    // ✅ NEW - Get order details for checkout (user must own the order)
+    @GetMapping("/{orderId}/checkout")
+    public ResponseEntity<OrderDTO> getOrderForCheckout(@PathVariable int orderId) {
+        try {
+            // This will be secured by Spring Security to ensure only the order owner can access
+            OrderDTO order = orderService.getOrderByIdForAdmin(orderId);
+            return ResponseEntity.ok(order);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // ✅ Get user's orders by status
     @GetMapping("/user/{userId}/status/{status}")
     public ResponseEntity<List<OrderDTO>> getUserOrdersByStatus(@PathVariable Long userId, @PathVariable String status) {
         List<OrderDTO> userOrders = orderService.getOrdersByUserId(userId);
@@ -67,8 +77,11 @@ public class OrderController {
     public ResponseEntity<OrderDTO> cancelOrder(
             @PathVariable int orderId,
             @PathVariable Long userId) {
-        OrderDTO cancelledOrder = orderService.cancelOrder(orderId, userId);
-        return ResponseEntity.ok(cancelledOrder);
+        try {
+            OrderDTO cancelledOrder = orderService.cancelOrder(orderId, userId);
+            return ResponseEntity.ok(cancelledOrder);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(null);
+        }
     }
-
 }

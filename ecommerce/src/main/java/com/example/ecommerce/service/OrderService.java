@@ -40,7 +40,7 @@ public class OrderService {
     @Autowired
     private ProductMapper productMapper;
 
-    // ✅ Existing method - Place order from cart
+    // ✅ Modified to NOT clear cart until payment is verified
     @Transactional
     public OrderDTO placeOrderFromCart(int cartId, List<Integer> cartItemIds) {
         Cart cart = cartRepository.findById(cartId)
@@ -86,13 +86,40 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
-        cart.getItems().removeAll(itemsToOrder);
-        cartRepository.save(cart);
+        // ✅ DON'T clear cart here - only clear when payment is successful
+        // cart.getItems().removeAll(itemsToOrder);
+        // cartRepository.save(cart);
 
         return convertToDTO(savedOrder);
     }
 
-    // ✅ NEW - Get all orders for admin
+    // ✅ NEW method to clear cart after successful payment
+    @Transactional
+    public void clearCartAfterPayment(int orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        
+        // Only clear cart if payment was successful
+        if ("PAID".equals(order.getStatus())) {
+            User user = order.getUser();
+            if (user.getCart() != null) {
+                Cart cart = user.getCart();
+                // Get the ordered items and remove them from cart
+                List<Integer> orderedProductIds = order.getOrderItems().stream()
+                        .map(item -> item.getProduct().getId())
+                        .collect(Collectors.toList());
+                
+                // Remove ordered items from cart
+                cart.getItems().removeIf(cartItem -> 
+                    orderedProductIds.contains(cartItem.getProduct().getId())
+                );
+                
+                cartRepository.save(cart);
+            }
+        }
+    }
+
+    // ✅ Get all orders for admin
     public List<OrderDTO> getAllOrdersForAdmin() {
         List<Order> orders = orderRepository.findAllByOrderByOrderDateDesc();
         return orders.stream()
@@ -100,7 +127,7 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    // ✅ NEW - Get orders by status
+    // ✅ Get orders by status
     public List<OrderDTO> getOrdersByStatus(String status) {
         List<Order> orders = orderRepository.findByStatusOrderByOrderDateDesc(status.toUpperCase());
         return orders.stream()
@@ -108,14 +135,25 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    // ✅ NEW - Get order by ID for admin
+    // ✅ NEW - Get order by ID for specific user (security check)
+    public OrderDTO getOrderByIdForUser(int orderId, Long userId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        
+        // Ensure order belongs to the requesting user
+        if (!order.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Access denied: Order does not belong to user");
+        }
+        
+        return convertToDTO(order);
+    }
     public OrderDTO getOrderByIdForAdmin(int orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
         return convertToDTO(order);
     }
 
-    // ✅ NEW - Update order status
+    // ✅ Update order status
     @Transactional
     public OrderDTO updateOrderStatus(int orderId, String newStatus) {
         Order order = orderRepository.findById(orderId)
@@ -129,12 +167,12 @@ public class OrderService {
         String oldStatus = order.getStatus();
         order.setStatus(newStatus.toUpperCase());
         
-        // Update timestamp if needed
-        if ("SHIPPED".equals(newStatus.toUpperCase()) || "DELIVERED".equals(newStatus.toUpperCase())) {
-            order.setOrderDate(new Date()); // You might want a separate field for status update time
-        }
-
         Order savedOrder = orderRepository.save(order);
+        
+        // ✅ Clear cart if status changed to PAID
+        if ("PAID".equals(newStatus.toUpperCase()) && !"PAID".equals(oldStatus)) {
+            clearCartAfterPayment(orderId);
+        }
         
         // Log the status change (optional)
         System.out.println("Order " + orderId + " status changed from " + oldStatus + " to " + newStatus);
@@ -142,7 +180,7 @@ public class OrderService {
         return convertToDTO(savedOrder);
     }
 
-    // ✅ NEW - Get orders by user ID
+    // ✅ Get orders by user ID
     public List<OrderDTO> getOrdersByUserId(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -153,7 +191,7 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    // ✅ NEW - Get order statistics
+    // ✅ Get order statistics
     public OrderStatsDTO getOrderStatistics() {
         long totalOrders = orderRepository.count();
         long pendingOrders = orderRepository.countByStatus("PENDING");
@@ -209,7 +247,7 @@ public class OrderService {
         return validStatuses.contains(status.toUpperCase());
     }
     
- // ✅ Cancel an order (user side)
+    // ✅ Cancel an order (user side)
     @Transactional
     public OrderDTO cancelOrder(int orderId, Long userId) {
         Order order = orderRepository.findById(orderId)
@@ -220,10 +258,9 @@ public class OrderService {
             throw new RuntimeException("Access denied: You cannot cancel this order");
         }
 
-        // Allow cancellation only if order is not already shipped/delivered/cancelled
-        if (!order.getStatus().equalsIgnoreCase("PENDING") &&
-            !order.getStatus().equalsIgnoreCase("PROCESSING")) {
-            throw new RuntimeException("Order cannot be cancelled at this stage");
+        // Allow cancellation only if order is not already shipped/delivered/paid
+        if (!order.getStatus().equalsIgnoreCase("PENDING")) {
+            throw new RuntimeException("Order cannot be cancelled at this stage. Current status: " + order.getStatus());
         }
 
         order.setStatus("CANCELLED");
@@ -231,5 +268,4 @@ public class OrderService {
 
         return convertToDTO(savedOrder);
     }
-
 }
