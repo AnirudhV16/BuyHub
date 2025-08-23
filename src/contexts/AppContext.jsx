@@ -12,7 +12,6 @@ const initialState = {
 export const AppProvider = ({ children }) => {
   const [state, dispatch] = useReducer(CartReducer, initialState);
 
-  // --- AUTH ---
   const login = (user) => {
     dispatch({ type: "LOGIN", payload: user });
   };

@@ -3,10 +3,12 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import Loading from "../components/Loading";
-import api from "../services/api"; // ✅ updated path
+import api from "../services/api";
 import "./AdminOrderManagement.css";
+import { useNotifications } from "../components/Notifications";
 
 const AdminOrderManagement = () => {
+  const { showSuccess, showError } = useNotifications();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -36,17 +38,14 @@ const AdminOrderManagement = () => {
       setLoading(true);
       setError("");
 
-      let url = "/api/admin/orders"; // ✅ prefixed with /api
+      let url = "/api/admin/orders";
       if (selectedStatus !== "ALL") {
         url = `/api/admin/orders/status/${selectedStatus}`;
       }
 
-      console.log("Fetching orders from:", url);
       const response = await api.get(url);
-      console.log("Orders response:", response.data);
       setOrders(response.data);
     } catch (err) {
-      console.error("Error fetching orders:", err);
       setError(
         `Failed to load orders: ${err.response?.data?.message || err.message}`
       );
@@ -57,12 +56,10 @@ const AdminOrderManagement = () => {
 
   const fetchOrderStats = async () => {
     try {
-      console.log("Fetching order stats...");
-      const response = await api.get("/api/admin/orders/stats"); // ✅ prefixed
-      console.log("Stats response:", response.data);
+      const response = await api.get("/api/admin/orders/stats");
       setOrderStats(response.data);
     } catch (err) {
-      console.error("Error fetching order stats:", err);
+      // no need to show error here, keep dashboard functional
     }
   };
 
@@ -70,10 +67,9 @@ const AdminOrderManagement = () => {
     try {
       setUpdatingOrderId(orderId);
 
-      const response = await api.put(
-        `/api/admin/orders/${orderId}/status`, // ✅ prefixed
-        { status: newStatus }
-      );
+      await api.put(`/api/admin/orders/${orderId}/status`, {
+        status: newStatus,
+      });
 
       setOrders((prevOrders) =>
         prevOrders.map((order) =>
@@ -83,10 +79,9 @@ const AdminOrderManagement = () => {
 
       await fetchOrderStats();
 
-      alert(`Order #${orderId} status updated to ${newStatus}`);
+      showSuccess(`Order #${orderId} status updated to ${newStatus}`);
     } catch (err) {
-      console.error("Error updating order status:", err);
-      alert(
+      showError(
         `Failed to update order status: ${
           err.response?.data?.message || err.message
         }`
@@ -166,7 +161,6 @@ const AdminOrderManagement = () => {
         <p>Manage and track all customer orders</p>
       </div>
 
-      {/* ✅ Order Statistics */}
       {orderStats && (
         <div className="order-stats">
           <div className="stat-card">
@@ -204,7 +198,6 @@ const AdminOrderManagement = () => {
         </div>
       )}
 
-      {/* ✅ Status Filter */}
       <div className="status-filter">
         <button
           className={selectedStatus === "ALL" ? "active" : ""}
@@ -225,7 +218,6 @@ const AdminOrderManagement = () => {
 
       {error && <div className="error-message">{error}</div>}
 
-      {/* ✅ Orders Table */}
       {orders.length === 0 ? (
         <div className="no-orders">
           <h2>

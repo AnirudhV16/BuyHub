@@ -3,10 +3,12 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import Loading from "../components/Loading";
-import api from "../services/api"; // ✅ centralized axios instance
+import api from "../services/api";
 import "./Orders.css";
+import { useNotifications } from "../components/Notifications";
 
 const Orders = () => {
+  const { showSuccess, showError } = useNotifications();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -46,7 +48,6 @@ const Orders = () => {
     setSelectedStatus(status);
   };
 
-  // ✅ Cancel order function
   const cancelOrder = async (orderId) => {
     try {
       await api.put(`/api/orders/${orderId}/user/${user.id}/cancel`);
@@ -57,7 +58,7 @@ const Orders = () => {
       );
     } catch (err) {
       console.error("Error cancelling order:", err);
-      alert("Failed to cancel order. Please try again.");
+      showError("Failed to cancel order. Please try again.");
     }
   };
 

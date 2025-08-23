@@ -6,8 +6,10 @@ import { useCart } from "../contexts/CartContext";
 import api from "../services/api";
 import Loading from "../components/Loading";
 import "./Products.css";
+import { useNotifications } from "../components/Notifications";
 
 const Products = () => {
+  const { showSuccess, showError } = useNotifications();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -34,9 +36,9 @@ const Products = () => {
   const handleAddToCart = async (productId) => {
     try {
       await addToCart(productId, 1);
-      alert("Product added to cart!");
+      showSuccess("Product added to cart!");
     } catch (err) {
-      alert("Failed to add product to cart");
+      showError("Failed to add product to cart");
     }
   };
 
@@ -47,15 +49,6 @@ const Products = () => {
 
   // helper function to check if user is admin - fixed to use 'role' instead of 'roles'
   const isAdmin = user?.role === "ROLE_ADMIN" || user?.role === "ADMIN";
-
-  // Debug logging to check admin status
-  useEffect(() => {
-    if (user) {
-      console.log("User object:", user);
-      console.log("User role:", user.role);
-      console.log("Is admin:", isAdmin);
-    }
-  }, [user, isAdmin]);
 
   if (loading) return <Loading />;
 

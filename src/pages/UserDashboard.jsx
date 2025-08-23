@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import Loading from "../components/Loading";
-import api from "../services/api"; // ✅ use centralized axios instance
+import api from "../services/api";
 import "./Dashboard.css";
 
 const UserDashboard = () => {
@@ -29,7 +29,6 @@ const UserDashboard = () => {
       setLoading(true);
       setError("");
 
-      // ✅ Added /api prefix
       const ordersResponse = await api.get(`/api/orders/user/${user.id}`);
       setUserOrders(ordersResponse.data);
 

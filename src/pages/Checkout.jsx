@@ -6,8 +6,10 @@ import { useAuth } from "../contexts/AuthContext";
 import api from "../services/api";
 import Loading from "../components/Loading";
 import "./Checkout.css";
+import { useNotifications } from "../components/Notifications";
 
 const Checkout = () => {
+  const { showSuccess, showError, showWarning } = useNotifications();
   const { orderId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -25,7 +27,6 @@ const Checkout = () => {
   });
 
   useEffect(() => {
-    console.log("Checkout useEffect - orderId:", orderId, "user:", user);
     if (orderId && user && user.id) {
       fetchOrderDetails();
     } else {
@@ -39,19 +40,14 @@ const Checkout = () => {
     try {
       setLoading(true);
 
-      // Check if orderId exists
       if (!orderId || orderId === "undefined") {
         setError("Invalid order ID");
         return;
       }
 
-      // Use the user-specific endpoint to get order details
       const response = await api.get(`/api/orders/${orderId}/user/${user.id}`);
       setOrder(response.data);
-
-      console.log("Order fetched successfully:", response.data);
     } catch (err) {
-      console.error("Error fetching order:", err);
       if (err.response?.status === 403) {
         setError("Access denied: You don't have permission to view this order");
       } else if (err.response?.status === 404) {
@@ -77,17 +73,16 @@ const Checkout = () => {
     const required = ["name", "email", "phone", "address", "city", "zipCode"];
     for (let field of required) {
       if (!billingDetails[field].trim()) {
-        alert(
+        showWarning(
           `Please fill in ${field.replace(/([A-Z])/g, " $1").toLowerCase()}`
         );
         return false;
       }
     }
 
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(billingDetails.email)) {
-      alert("Please enter a valid email address");
+      showWarning("Please enter a valid email address");
       return false;
     }
 
@@ -113,14 +108,12 @@ const Checkout = () => {
   };
 
   const handlePayment = async () => {
-    // Validate billing details first
     if (!validateBillingDetails()) {
       return;
     }
 
-    // Validate order status
     if (order.status !== "PENDING") {
-      alert("This order cannot be paid. Status: " + order.status);
+      showSuccess("Payment successful! Redirecting to orders...");
       return;
     }
 
@@ -128,13 +121,11 @@ const Checkout = () => {
     setError("");
 
     try {
-      // Load Razorpay script
       const isScriptLoaded = await loadRazorpayScript();
       if (!isScriptLoaded) {
         throw new Error("Failed to load payment gateway");
       }
 
-      // Create payment order
       const paymentResponse = await api.post(
         `/api/payment/create-order/${orderId}/${order.totalPrice}`
       );
@@ -146,10 +137,9 @@ const Checkout = () => {
         razorpayKeyId,
       } = paymentResponse.data;
 
-      // Configure Razorpay options
       const options = {
         key: razorpayKeyId,
-        amount: amount, // Amount is already in paise from backend
+        amount: amount,
         currency: currency,
         name: "Your Ecommerce Store",
         description: `Order #${orderId}`,
@@ -158,7 +148,6 @@ const Checkout = () => {
           try {
             setPaymentLoading(true);
 
-            // Verify payment
             const verifyResponse = await api.post("/api/payment/verify", {
               razorpayOrderId: response.razorpay_order_id,
               paymentId: response.razorpay_payment_id,
@@ -166,17 +155,13 @@ const Checkout = () => {
             });
 
             if (verifyResponse.data === "Payment verified successfully!") {
-              alert("Payment successful! Redirecting to orders...");
+              showSuccess("Payment successful! Redirecting to orders...");
               navigate("/orders");
             } else {
               throw new Error("Payment verification failed");
             }
-          } catch (verifyError) {
-            console.error("Payment verification error:", verifyError);
-            alert(
-              "Payment verification failed. Please contact support with payment ID: " +
-                response.razorpay_payment_id
-            );
+          } catch {
+            showError("Payment verification failed...");
           } finally {
             setPaymentLoading(false);
           }
@@ -197,29 +182,23 @@ const Checkout = () => {
         modal: {
           ondismiss: () => {
             setPaymentLoading(false);
-            // Don't show error when user intentionally closes the modal
           },
         },
       };
 
       const razorpay = new window.Razorpay(options);
 
-      // Handle payment failure
-      razorpay.on("payment.failed", function (response) {
-        console.error("Payment failed:", response.error);
-        alert(
-          `Payment failed: ${response.error.description || "Unknown error"}`
-        );
+      razorpay.on("payment.failed", function () {
+        showError("Failed to initiate payment. Please try again.");
         setPaymentLoading(false);
       });
 
       razorpay.open();
     } catch (err) {
-      console.error("Payment initiation error:", err);
       setError(
         "Failed to initiate payment: " + (err.response?.data || err.message)
       );
-      alert("Failed to initiate payment. Please try again.");
+      showError("Failed to initiate payment. Please try again.");
     } finally {
       setPaymentLoading(false);
     }
@@ -244,34 +223,6 @@ const Checkout = () => {
     <div className="checkout-page">
       <div className="checkout-container">
         <h1>Checkout</h1>
-        debugInfo = (
-        <div
-          style={{
-            background: "#f0f0f0",
-            padding: "10px",
-            margin: "10px",
-            fontSize: "12px",
-            fontFamily: "monospace",
-          }}
-        >
-          <h4>Debug Info:</h4>
-          <p>Order ID from params: {orderId}</p>
-          <p>
-            User:{" "}
-            {user
-              ? JSON.stringify({ id: user.id, username: user.username })
-              : "null"}
-          </p>
-          <p>Loading: {loading.toString()}</p>
-          <p>Error: {error || "none"}</p>
-          <p>
-            Order:{" "}
-            {order
-              ? `Order ${order.id} - ${order.status} - $${order.totalPrice}`
-              : "null"}
-          </p>
-        </div>
-        );
         {error && <div className="error-message">{error}</div>}
         <div className="checkout-content">
           <div className="order-summary">
@@ -287,7 +238,6 @@ const Checkout = () => {
                 </p>
               </div>
 
-              {/* Order Items */}
               <div className="order-items">
                 <h4>Items ({order.orderItems?.length || 0}):</h4>
                 {order.orderItems?.map((item, index) => (

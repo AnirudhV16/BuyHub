@@ -6,8 +6,10 @@ import api from "../services/api";
 import Loading from "../components/Loading";
 import AdminOrderManagement from "../components/AdminOrderManagement";
 import "./AdminDashboard.css";
+import { useNotifications } from "../components/Notifications";
 
 const AdminDashboard = () => {
+  const { showSuccess, showError } = useNotifications();
   const [activeTab, setActiveTab] = useState("overview");
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -112,11 +114,11 @@ const AdminDashboard = () => {
 
       resetForm();
       await fetchProducts();
-      alert("Product saved successfully!");
+      showSuccess("Product saved successfully!");
     } catch (err) {
-      alert("Failed to save product");
-      console.error("Save error:", err);
+      showError("Failed to save product");
     }
+    console.error("Save error:", err);
   };
 
   const handleEdit = (product) => {
@@ -134,10 +136,9 @@ const AdminDashboard = () => {
       try {
         await api.delete(`/api/products/${productId}`);
         await fetchProducts();
-        alert("Product deleted successfully!");
+        showSuccess("Product deleted successfully!");
       } catch (err) {
-        alert("Failed to delete product");
-        console.error("Delete error:", err);
+        showError("Failed to delete product");
       }
     }
   };

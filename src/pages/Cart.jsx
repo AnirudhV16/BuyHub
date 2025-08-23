@@ -7,8 +7,10 @@ import { useCart } from "../contexts/CartContext";
 import api from "../services/api";
 import Loading from "../components/Loading";
 import "./Cart.css";
+import { useNotifications } from "../components/Notifications";
 
 const Cart = () => {
+  const { showSuccess, showError } = useNotifications();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -27,7 +29,6 @@ const Cart = () => {
   const fetchCartItems = async () => {
     try {
       const response = await api.get(`/api/cart/${cartId}/items`);
-      console.log("Cart Items Data:", response.data);
       setCartItems(response.data);
       setSelectedItems(response.data.map((item) => item.id));
     } catch (err) {
@@ -42,10 +43,11 @@ const Cart = () => {
     try {
       await api.delete(`/api/cart/${cartId}/remove/${productId}`);
       await fetchCartItems();
-      await updateCartItemCount(); // Update cart count in navbar
+      await updateCartItemCount();
+      showSuccess("Item removed from cart");
     } catch (err) {
       console.error("Remove item error:", err);
-      alert("Failed to remove item from cart");
+      showError("Failed to remove item from cart");
     }
   };
 
@@ -82,20 +84,12 @@ const Cart = () => {
     setError("");
 
     try {
-      console.log(
-        "Creating order with cartId:",
-        cartId,
-        "selectedItems:",
-        selectedItems
-      );
-
       const response = await api.post(
         `/api/orders/cart/${cartId}/items`,
         selectedItems
       );
 
       const order = response.data;
-      console.log("Order created:", order);
 
       if (!order || !order.id) {
         throw new Error("Invalid order response");
@@ -146,7 +140,6 @@ const Cart = () => {
         <div className="cart-content">
           <div className="cart-items">
             {cartItems.map((item) => {
-              // Check if we have essential product information
               if (!item.productName || item.price === undefined) {
                 return (
                   <div key={item.id} className="cart-item error-item">
