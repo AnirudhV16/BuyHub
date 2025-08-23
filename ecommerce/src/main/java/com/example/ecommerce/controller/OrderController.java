@@ -17,27 +17,27 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    // ✅ Place order for full cart (existing)
+    // Place order for full cart (existing)
     @PostMapping("/cart/{cartId}")
     public OrderDTO placeFullCartOrder(@PathVariable int cartId) {
         return orderService.placeOrderFromCart(cartId, null);
     }
 
-    // ✅ Place order for selected cart items (existing)
+    // Place order for selected cart items (existing)
     @PostMapping("/cart/{cartId}/items")
     public OrderDTO placePartialOrder(@PathVariable int cartId,
                                       @RequestBody List<Integer> selectedCartItemIds) {
         return orderService.placeOrderFromCart(cartId, selectedCartItemIds);
     }
 
-    // ✅ Get user's order history
+    // Get users order history
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<OrderDTO>> getUserOrders(@PathVariable Long userId) {
         List<OrderDTO> orders = orderService.getOrdersByUserId(userId);
         return ResponseEntity.ok(orders);
     }
 
-    // ✅ Get specific order by ID (for user to view their own order)
+    // Get specific order by ID (for user to view their own order)
     @GetMapping("/{orderId}/user/{userId}")
     public ResponseEntity<OrderDTO> getUserOrderById(@PathVariable int orderId, @PathVariable Long userId) {
         try {
@@ -48,7 +48,7 @@ public class OrderController {
         }
     }
 
-    // ✅ NEW - Get order details for checkout (user must own the order)
+    // NEW - Get order details for checkout (user must own the order)
     @GetMapping("/{orderId}/checkout")
     public ResponseEntity<OrderDTO> getOrderForCheckout(@PathVariable int orderId) {
         try {
@@ -60,7 +60,7 @@ public class OrderController {
         }
     }
 
-    // ✅ Get user's orders by status
+    // Get user's orders by status
     @GetMapping("/user/{userId}/status/{status}")
     public ResponseEntity<List<OrderDTO>> getUserOrdersByStatus(@PathVariable Long userId, @PathVariable String status) {
         List<OrderDTO> userOrders = orderService.getOrdersByUserId(userId);
@@ -72,7 +72,7 @@ public class OrderController {
         return ResponseEntity.ok(filteredOrders);
     }
     
-    // ✅ Cancel order (user can only cancel their own order if still PENDING/PROCESSING)
+    // Cancel order (user can only cancel their own order if still PENDING/PROCESSING)
     @PutMapping("/{orderId}/user/{userId}/cancel")
     public ResponseEntity<OrderDTO> cancelOrder(
             @PathVariable int orderId,

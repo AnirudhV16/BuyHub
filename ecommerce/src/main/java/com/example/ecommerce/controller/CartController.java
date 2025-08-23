@@ -17,17 +17,13 @@ public class CartController {
         this.cartService = cartService;
     }
 
-    /**
-     * Create a cart for a user (if not exists)
-     */
+    // Create a cart for a user (if not exists)
     @PostMapping("/create/{userId}")
     public CartDTO createCart(@PathVariable Long userId) {
         return cartService.createCart(userId);
     }
 
-    /**
-     * Add product to cart
-     */
+    // Add product to cart
     @PostMapping("/{cartId}/add/{productId}")
     public CartDTO addProductToCart(@PathVariable int cartId,
                                     @PathVariable int productId,
@@ -35,34 +31,26 @@ public class CartController {
         return cartService.addProductToCart(cartId, productId, quantity);
     }
 
-    /**
-     * Remove product from cart
-     */
+    // Remove product from cart
     @DeleteMapping("/{cartId}/remove/{productId}")
     public CartDTO removeProductFromCart(@PathVariable int cartId,
                                          @PathVariable int productId) {
         return cartService.removeProductFromCart(cartId, productId);
     }
 
-    /**
-     * Get all items in a cart
-     */
+    // Get all items in a cart
     @GetMapping("/{cartId}/items")
     public List<CartItemDTO> getCartItems(@PathVariable int cartId) {
         return cartService.getCartItems(cartId);
     }
 
-    /**
-     * Get cart by ID
-     */
+    // Get cart by ID
     @GetMapping("/{cartId}")
     public CartDTO getCartById(@PathVariable int cartId) {
         return cartService.getCartById(cartId);
     }
 
-    /**
-     * Get a user's cart by userId (creates new if not exists)
-     */
+    // Get a user's cart by userId (creates new if not exists)
     @GetMapping("/user/{userId}")
     public CartDTO getCartByUserId(@PathVariable Long userId) {
         return cartService.getCartByUserId(userId);

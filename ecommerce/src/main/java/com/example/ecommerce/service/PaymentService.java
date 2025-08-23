@@ -20,15 +20,14 @@ public class PaymentService {
     private OrderRepository orderRepository;
 
     @Autowired
-    private OrderService orderService; // ✅ Add OrderService dependency
-
+    private OrderService orderService;
     @Value("${razorpay.key.id}")
     private String razorpayKeyId;
 
     @Value("${razorpay.key.secret}")
     private String razorpayKeySecret;
 
-    // ✅ Create Razorpay Order and save mapping in DB
+    // Create Razorpay Order and save mapping in DB
     public PaymentResponse createOrder(double amount, int dbOrderId) throws Exception {
         
         // First verify the order exists and is in PENDING state
@@ -60,12 +59,10 @@ public class PaymentService {
 
             com.razorpay.Order razorpayOrder = razorpay.orders.create(options);
 
-            // ✅ save mapping in DB
             order.setRazorpayOrderId(razorpayOrder.get("id"));
             order.setStatus("CREATED"); // Status when Razorpay order is created but not paid
             orderRepository.save(order);
 
-            // ✅ Return structured response
             return new PaymentResponse(
                     razorpayOrder.get("id"),
                     razorpayOrder.get("amount"),
@@ -79,7 +76,7 @@ public class PaymentService {
         }
     }
 
-    // ✅ Verify Payment Signature & Update DB
+    // Verify Payment Signature & Update DB
     public boolean verifyPayment(String razorpayOrderId, String paymentId, String signature) throws Exception {
         
         if (razorpayOrderId == null || paymentId == null || signature == null) {
@@ -108,7 +105,7 @@ public class PaymentService {
                 order.setRazorpayPaymentId(paymentId);
                 orderRepository.save(order);
                 
-                // ✅ Now clear the cart since payment is successful
+                // Now clear the cart since payment is successful
                 orderService.clearCartAfterPayment(order.getId());
 
                 System.out.println("Payment verified successfully for order: " + order.getId());
@@ -145,7 +142,7 @@ public class PaymentService {
         }
     }
 
-    // ✅ Helper method for HMAC SHA256
+    // Helper method for HMAC SHA256
     private String HmacSHA256(String data, String secret) throws Exception {
         try {
             Mac mac = Mac.getInstance("HmacSHA256");
@@ -158,14 +155,14 @@ public class PaymentService {
         }
     }
     
-    // ✅ Additional method to check payment status
+    // Additional method to check payment status
     public String getPaymentStatus(int orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
         return order.getStatus();
     }
     
-    // ✅ Method to handle payment failure cleanup
+    // Method to handle payment failure cleanup
     public void handlePaymentFailure(String razorpayOrderId, String reason) {
         try {
             Order order = orderRepository.findByRazorpayOrderId(razorpayOrderId);

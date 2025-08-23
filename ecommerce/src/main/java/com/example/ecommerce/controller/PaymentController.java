@@ -16,7 +16,7 @@ public class PaymentController {
         this.paymentService = paymentService;
     }
 
-    // ✅ Create Razorpay order and map to DB order
+    // Create Razorpay order and map to DB order
     @PostMapping("/create-order/{dbOrderId}/{amount}")
     public ResponseEntity<?> createOrder(@PathVariable int dbOrderId, @PathVariable double amount) {
         try {
@@ -27,7 +27,7 @@ public class PaymentController {
         }
     }
 
-    // ✅ Verify payment
+    // Verify payment
     @PostMapping("/verify")
     public ResponseEntity<?> verifyPayment(@RequestBody PaymentRequest request) {
         try {

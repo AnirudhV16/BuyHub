@@ -17,7 +17,7 @@ public class Order {
 
     private double totalPrice;
 
-    // ✅ Razorpay integration
+    // Razorpay integration
     private String razorpayOrderId;    // store Razorpay order id
     private String razorpayPaymentId;  // store Razorpay payment id after success
 
@@ -26,11 +26,10 @@ public class Order {
     @JoinColumn(name = "user_id")
     private User user;
 
-    // OrderItems - snapshot of cart
+    // OrderItems(snapshot of cart)
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
 
-    // Getters and Setters
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 

@@ -40,7 +40,7 @@ public class OrderService {
     @Autowired
     private ProductMapper productMapper;
 
-    // ✅ Modified to NOT clear cart until payment is verified
+    // Modified to NOT clear cart until payment is verified
     @Transactional
     public OrderDTO placeOrderFromCart(int cartId, List<Integer> cartItemIds) {
         Cart cart = cartRepository.findById(cartId)
@@ -86,14 +86,10 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
-        // ✅ DON'T clear cart here - only clear when payment is successful
-        // cart.getItems().removeAll(itemsToOrder);
-        // cartRepository.save(cart);
-
         return convertToDTO(savedOrder);
     }
 
-    // ✅ NEW method to clear cart after successful payment
+    // NEW method to clear cart after successful payment
     @Transactional
     public void clearCartAfterPayment(int orderId) {
         Order order = orderRepository.findById(orderId)
@@ -119,7 +115,7 @@ public class OrderService {
         }
     }
 
-    // ✅ Get all orders for admin
+    // Get all orders for admin
     public List<OrderDTO> getAllOrdersForAdmin() {
         List<Order> orders = orderRepository.findAllByOrderByOrderDateDesc();
         return orders.stream()
@@ -127,7 +123,7 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    // ✅ Get orders by status
+    // Get orders by status
     public List<OrderDTO> getOrdersByStatus(String status) {
         List<Order> orders = orderRepository.findByStatusOrderByOrderDateDesc(status.toUpperCase());
         return orders.stream()
@@ -135,7 +131,7 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    // ✅ NEW - Get order by ID for specific user (security check)
+    // Get order by ID for specific user (security check)
     public OrderDTO getOrderByIdForUser(int orderId, Long userId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
@@ -153,7 +149,7 @@ public class OrderService {
         return convertToDTO(order);
     }
 
-    // ✅ Update order status
+    // Update order status
     @Transactional
     public OrderDTO updateOrderStatus(int orderId, String newStatus) {
         Order order = orderRepository.findById(orderId)
@@ -169,7 +165,7 @@ public class OrderService {
         
         Order savedOrder = orderRepository.save(order);
         
-        // ✅ Clear cart if status changed to PAID
+        // Clear cart if status changed to PAID
         if ("PAID".equals(newStatus.toUpperCase()) && !"PAID".equals(oldStatus)) {
             clearCartAfterPayment(orderId);
         }
@@ -180,7 +176,7 @@ public class OrderService {
         return convertToDTO(savedOrder);
     }
 
-    // ✅ Get orders by user ID
+    // Get orders by user ID
     public List<OrderDTO> getOrdersByUserId(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -191,7 +187,7 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    // ✅ Get order statistics
+    // Get order statistics
     public OrderStatsDTO getOrderStatistics() {
         long totalOrders = orderRepository.count();
         long pendingOrders = orderRepository.countByStatus("PENDING");
@@ -219,7 +215,7 @@ public class OrderService {
                                 deliveredOrders, cancelledOrders, totalRevenue, monthlyRevenue);
     }
 
-    // ✅ Helper method - Convert Order to DTO
+    // Helper method - Convert Order to DTO
     private OrderDTO convertToDTO(Order order) {
         OrderDTO dto = new OrderDTO();
         dto.setId(order.getId());
@@ -241,13 +237,13 @@ public class OrderService {
         return dto;
     }
 
-    // ✅ Helper method - Validate order status
+    // Helper method - Validate order status
     private boolean isValidOrderStatus(String status) {
         List<String> validStatuses = List.of("PENDING", "PAID", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED");
         return validStatuses.contains(status.toUpperCase());
     }
     
-    // ✅ Cancel an order (user side)
+    // Cancel an order (user side)
     @Transactional
     public OrderDTO cancelOrder(int orderId, Long userId) {
         Order order = orderRepository.findById(orderId)

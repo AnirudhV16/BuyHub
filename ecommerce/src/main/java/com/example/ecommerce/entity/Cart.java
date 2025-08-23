@@ -22,7 +22,7 @@ public class Cart {
     private List<CartItem> items = new ArrayList<>();
 
 
-    // --- Utility Methods ---
+    // Utility Methods
     public void addItem(CartItem item) {
         items.add(item);
         item.setCart(this);
@@ -33,7 +33,6 @@ public class Cart {
         item.setCart(null);
     }
 
-    // --- Getters and Setters ---
     public Integer getId() { 
     	return id; 
     }
