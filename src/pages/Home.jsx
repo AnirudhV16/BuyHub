@@ -39,7 +39,7 @@ const Home = () => {
                   </>
                 ) : (
                   <>
-                    <Link to="/dashboard" className="btn btn-primary">
+                    <Link to="/Products" className="btn btn-primary">
                       Shop Now
                     </Link>
                     <Link to="/cart" className="btn btn-secondary">

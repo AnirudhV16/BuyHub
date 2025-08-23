@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import Loading from "../components/Loading";
-import api from "../services/api"; // ✅ use your pre-configured api instance
+import api from "../services/api"; // ✅ centralized axios instance
 import "./Orders.css";
 
 const Orders = () => {
@@ -11,7 +11,7 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("ALL");
-  const { user } = useAuth(); // ✅ no need to get token, api.js handles it
+  const { user } = useAuth();
 
   useEffect(() => {
     if (user && user.id) {
@@ -24,7 +24,6 @@ const Orders = () => {
       setLoading(true);
       setError("");
 
-      // ✅ Just call api (no need for headers, token is auto-attached)
       const response = await api.get(`/api/orders/user/${user.id}`);
 
       let filteredOrders = response.data;
@@ -45,6 +44,21 @@ const Orders = () => {
 
   const handleStatusFilter = (status) => {
     setSelectedStatus(status);
+  };
+
+  // ✅ Cancel order function
+  const cancelOrder = async (orderId) => {
+    try {
+      await api.put(`/api/orders/${orderId}/user/${user.id}/cancel`);
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.id === orderId ? { ...order, status: "CANCELLED" } : order
+        )
+      );
+    } catch (err) {
+      console.error("Error cancelling order:", err);
+      alert("Failed to cancel order. Please try again.");
+    }
   };
 
   const getStatusColor = (status) => {
@@ -97,19 +111,21 @@ const Orders = () => {
         <p>Track and manage your order history</p>
       </div>
 
-      {/* Status Filter */}
+      {/* Status Filter - Added CANCELLED */}
       <div className="status-filter">
-        {["ALL", "PENDING", "PAID", "SHIPPED", "DELIVERED"].map((status) => (
-          <button
-            key={status}
-            className={selectedStatus === status ? "active" : ""}
-            onClick={() => handleStatusFilter(status)}
-          >
-            {status === "ALL"
-              ? "All Orders"
-              : status.charAt(0) + status.slice(1).toLowerCase()}
-          </button>
-        ))}
+        {["ALL", "PENDING", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"].map(
+          (status) => (
+            <button
+              key={status}
+              className={selectedStatus === status ? "active" : ""}
+              onClick={() => handleStatusFilter(status)}
+            >
+              {status === "ALL"
+                ? "All Orders"
+                : status.charAt(0) + status.slice(1).toLowerCase()}
+            </button>
+          )
+        )}
       </div>
 
       {error && <div className="error-message">{error}</div>}
@@ -184,79 +200,98 @@ const Orders = () => {
                   <strong>Total: ${order.totalPrice.toFixed(2)}</strong>
                 </div>
                 <div className="order-actions">
+                  {/* Only show Cancel button for PENDING orders */}
                   {order.status === "PENDING" && (
-                    <button className="cancel-order-btn">Cancel Order</button>
+                    <button
+                      className="cancel-order-btn"
+                      onClick={() => cancelOrder(order.id)}
+                    >
+                      Cancel Order
+                    </button>
                   )}
+                  {/* Show cancelled message for CANCELLED orders */}
+                  {order.status === "CANCELLED" && (
+                    <span className="cancelled-indicator">Order Cancelled</span>
+                  )}
+                  {/* Show reorder button for DELIVERED orders */}
                   {order.status === "DELIVERED" && (
                     <button className="reorder-btn">Reorder</button>
                   )}
-                  <button className="view-details-btn">View Details</button>
                 </div>
               </div>
 
-              {/* Order Progress Indicator */}
-              <div className="order-progress">
-                <div className="progress-steps">
-                  <div
-                    className={`step ${
-                      [
-                        "PENDING",
-                        "PAID",
-                        "PROCESSING",
-                        "SHIPPED",
-                        "DELIVERED",
-                      ].includes(order.status)
-                        ? "completed"
-                        : ""
-                    }`}
-                  >
-                    <div className="step-icon">📝</div>
-                    <span>Ordered</span>
-                  </div>
-                  <div
-                    className={`step ${
-                      ["PAID", "PROCESSING", "SHIPPED", "DELIVERED"].includes(
-                        order.status
-                      )
-                        ? "completed"
-                        : ""
-                    }`}
-                  >
-                    <div className="step-icon">💳</div>
-                    <span>Paid</span>
-                  </div>
-                  <div
-                    className={`step ${
-                      ["PROCESSING", "SHIPPED", "DELIVERED"].includes(
-                        order.status
-                      )
-                        ? "completed"
-                        : ""
-                    }`}
-                  >
-                    <div className="step-icon">📦</div>
-                    <span>Processing</span>
-                  </div>
-                  <div
-                    className={`step ${
-                      ["SHIPPED", "DELIVERED"].includes(order.status)
-                        ? "completed"
-                        : ""
-                    }`}
-                  >
-                    <div className="step-icon">🚚</div>
-                    <span>Shipped</span>
-                  </div>
-                  <div
-                    className={`step ${
-                      order.status === "DELIVERED" ? "completed" : ""
-                    }`}
-                  >
-                    <div className="step-icon">✅</div>
-                    <span>Delivered</span>
+              {/* Order Progress Indicator - Updated to handle CANCELLED status */}
+              {order.status === "CANCELLED" ? (
+                <div className="order-progress cancelled-progress">
+                  <div className="cancelled-message">
+                    <div className="cancelled-icon">❌</div>
+                    <span>This order has been cancelled</span>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="order-progress">
+                  <div className="progress-steps">
+                    <div
+                      className={`step ${
+                        [
+                          "PENDING",
+                          "PAID",
+                          "PROCESSING",
+                          "SHIPPED",
+                          "DELIVERED",
+                        ].includes(order.status)
+                          ? "completed"
+                          : ""
+                      }`}
+                    >
+                      <div className="step-icon">📝</div>
+                      <span>Ordered</span>
+                    </div>
+                    <div
+                      className={`step ${
+                        ["PAID", "PROCESSING", "SHIPPED", "DELIVERED"].includes(
+                          order.status
+                        )
+                          ? "completed"
+                          : ""
+                      }`}
+                    >
+                      <div className="step-icon">💳</div>
+                      <span>Paid</span>
+                    </div>
+                    <div
+                      className={`step ${
+                        ["PROCESSING", "SHIPPED", "DELIVERED"].includes(
+                          order.status
+                        )
+                          ? "completed"
+                          : ""
+                      }`}
+                    >
+                      <div className="step-icon">📦</div>
+                      <span>Processing</span>
+                    </div>
+                    <div
+                      className={`step ${
+                        ["SHIPPED", "DELIVERED"].includes(order.status)
+                          ? "completed"
+                          : ""
+                      }`}
+                    >
+                      <div className="step-icon">🚚</div>
+                      <span>Shipped</span>
+                    </div>
+                    <div
+                      className={`step ${
+                        order.status === "DELIVERED" ? "completed" : ""
+                      }`}
+                    >
+                      <div className="step-icon">✅</div>
+                      <span>Delivered</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>

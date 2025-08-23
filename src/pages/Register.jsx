@@ -1,5 +1,4 @@
 /** @format */
-
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -10,19 +9,16 @@ const Register = () => {
     username: "",
     password: "",
     email: "",
+    role: "Role_User", // Default to Role_User
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
   const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
@@ -33,16 +29,13 @@ const Register = () => {
 
     try {
       const result = await register(formData);
-
       if (result.success) {
         setSuccess("Account created successfully! Please login.");
-        setTimeout(() => {
-          navigate("/login");
-        }, 2000);
+        setTimeout(() => navigate("/login"), 2000);
       } else {
         setError(result.error);
       }
-    } catch (err) {
+    } catch {
       setError("Registration failed. Please try again.");
     } finally {
       setLoading(false);
@@ -58,7 +51,6 @@ const Register = () => {
         </div>
 
         {error && <div className="alert alert-error">{error}</div>}
-
         {success && <div className="alert alert-success">{success}</div>}
 
         <form onSubmit={handleSubmit} className="auth-form">
@@ -121,8 +113,9 @@ const Register = () => {
 
         <div className="auth-footer">
           <p>
-            Already have an account?{" "}
+            Already have an account?
             <Link to="/login" className="auth-link">
+              {" "}
               Sign in here
             </Link>
           </p>

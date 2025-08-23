@@ -11,6 +11,7 @@ const Products = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [imageErrors, setImageErrors] = useState(new Set());
   const { user } = useAuth();
   const { addToCart } = useCart();
 
@@ -39,8 +40,22 @@ const Products = () => {
     }
   };
 
-  // helper function to check if user is admin
-  const isAdmin = user?.roles?.includes("ROLE_ADMIN");
+  // Handle image load errors
+  const handleImageError = (productId) => {
+    setImageErrors((prev) => new Set([...prev, productId]));
+  };
+
+  // helper function to check if user is admin - fixed to use 'role' instead of 'roles'
+  const isAdmin = user?.role === "ROLE_ADMIN" || user?.role === "ADMIN";
+
+  // Debug logging to check admin status
+  useEffect(() => {
+    if (user) {
+      console.log("User object:", user);
+      console.log("User role:", user.role);
+      console.log("Is admin:", isAdmin);
+    }
+  }, [user, isAdmin]);
 
   if (loading) return <Loading />;
 
@@ -56,27 +71,58 @@ const Products = () => {
       <div className="products-grid">
         {products.map((product) => (
           <div key={product.id} className="product-card">
-            {product.imageUrl && (
-              <img
-                src={product.imageUrl}
-                alt={product.name}
-                className="product-image"
-              />
-            )}
+            <div className="product-image-container">
+              {product.imageUrl && !imageErrors.has(product.id) ? (
+                <img
+                  src={product.imageUrl}
+                  alt={product.name}
+                  className="product-image"
+                  onError={() => handleImageError(product.id)}
+                />
+              ) : (
+                <div className="default-product-image">
+                  <div className="product-placeholder">
+                    <div className="placeholder-icon">
+                      {product.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="placeholder-text">{product.name}</div>
+                    <div className="placeholder-subtext">
+                      No Image Available
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="product-info">
               <h3 className="product-name">{product.name}</h3>
               <p className="product-description">{product.description}</p>
               <div className="product-price">${product.price}</div>
 
-              {/* Show Add to Cart only if user is not admin */}
+              {/* Show Add to Cart only if user is logged in and is NOT admin */}
               {user && !isAdmin && (
                 <button
                   className="add-to-cart-btn"
                   onClick={() => handleAddToCart(product.id)}
-                  disabled={product.stockQuantity === 0}
                 >
-                  {product.stockQuantity === 0 ? "Out of Stock" : "Add to Cart"}
+                  Add to Cart
                 </button>
+              )}
+
+              {/* Debug info - Remove this after testing */}
+              {user && isAdmin && (
+                <div
+                  style={{
+                    background: "#e8f4f8",
+                    padding: "10px",
+                    borderRadius: "5px",
+                    fontSize: "0.9rem",
+                    color: "#2c3e50",
+                    textAlign: "center",
+                  }}
+                >
+                  👨‍💼 Admin View - No Cart Actions
+                </div>
               )}
             </div>
           </div>

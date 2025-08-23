@@ -39,11 +39,92 @@
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-.product-image {
+/* Updated image container */
+.product-image-container {
     width: 100%;
     height: 250px;
-    object-fit: cover;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
     background: #f8f9fa;
+}
+
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.2s ease;
+}
+
+.product-image:hover {
+    transform: scale(1.05);
+}
+
+/* Default image placeholder */
+.default-product-image {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.product-placeholder {
+    text-align: center;
+    color: white;
+    z-index: 2;
+}
+
+.placeholder-icon {
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0 auto 12px;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.placeholder-text {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    line-height: 1.3;
+    max-width: 250px;
+    word-wrap: break-word;
+}
+
+.placeholder-subtext {
+    font-size: 0.8rem;
+    opacity: 0.8;
+    font-style: italic;
+}
+
+/* Subtle pattern overlay */
+.default-product-image::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+        linear-gradient(45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.1) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.1) 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    opacity: 0.3;
 }
 
 .product-info {
@@ -62,18 +143,16 @@
     margin-bottom: 1rem;
     font-size: 0.95rem;
     line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .product-price {
     font-size: 1.5rem;
     font-weight: bold;
     color: #e74c3c;
-    margin-bottom: 0.5rem;
-}
-
-.product-stock {
-    font-size: 0.9rem;
-    color: #666;
     margin-bottom: 1rem;
 }
 
@@ -98,6 +177,7 @@
 .add-to-cart-btn:disabled {
     background: #ccc;
     cursor: not-allowed;
+    transform: none;
 }
 
 .error-message {

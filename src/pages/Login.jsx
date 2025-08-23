@@ -36,7 +36,7 @@ const Login = () => {
         if (result.user.role === "ROLE_ADMIN") {
           navigate("/admin");
         } else {
-          navigate("/dashboard");
+          navigate("/"); // Navigate to home page for regular users
         }
       } else {
         setError(result.error);
@@ -107,22 +107,6 @@ const Login = () => {
               Sign up here
             </Link>
           </p>
-        </div>
-
-        <div className="demo-credentials">
-          <h4>Demo Credentials</h4>
-          <div className="demo-grid">
-            <div className="demo-card">
-              <strong>Admin</strong>
-              <p>Username: admin</p>
-              <p>Password: admin123</p>
-            </div>
-            <div className="demo-card">
-              <strong>User</strong>
-              <p>Username: user</p>
-              <p>Password: user123</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>

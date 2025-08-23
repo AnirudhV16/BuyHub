@@ -13,8 +13,9 @@ const Cart = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedItems, setSelectedItems] = useState([]);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const { user } = useAuth();
-  const { cartId } = useCart();
+  const { cartId, updateCartItemCount } = useCart();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,10 +27,6 @@ const Cart = () => {
   const fetchCartItems = async () => {
     try {
       const response = await api.get(`/api/cart/${cartId}/items`);
-      // Print the entire response
-      console.log("Full API Response:", response);
-
-      // Print just the data
       console.log("Cart Items Data:", response.data);
       setCartItems(response.data);
       setSelectedItems(response.data.map((item) => item.id));
@@ -45,6 +42,7 @@ const Cart = () => {
     try {
       await api.delete(`/api/cart/${cartId}/remove/${productId}`);
       await fetchCartItems();
+      await updateCartItemCount(); // Update cart count in navbar
     } catch (err) {
       console.error("Remove item error:", err);
       alert("Failed to remove item from cart");
@@ -80,16 +78,39 @@ const Cart = () => {
       return;
     }
 
+    setCheckoutLoading(true);
+    setError("");
+
     try {
+      console.log(
+        "Creating order with cartId:",
+        cartId,
+        "selectedItems:",
+        selectedItems
+      );
+
       const response = await api.post(
         `/api/orders/cart/${cartId}/items`,
         selectedItems
       );
+
       const order = response.data;
+      console.log("Order created:", order);
+
+      if (!order || !order.id) {
+        throw new Error("Invalid order response");
+      }
+
       navigate(`/checkout/${order.id}`);
     } catch (err) {
-      alert("Failed to create order");
       console.error("Checkout error:", err);
+      setError(
+        "Failed to create order: " +
+          (err.response?.data?.message || err.message)
+      );
+      alert("Failed to create order. Please try again.");
+    } finally {
+      setCheckoutLoading(false);
     }
   };
 
@@ -153,34 +174,41 @@ const Cart = () => {
                     />
                   </div>
 
-                  {item.productImageUrl && (
-                    <img
-                      src={item.productImageUrl}
-                      alt={item.productName}
-                      className="item-image"
-                    />
-                  )}
+                  <div className="item-image-container">
+                    {item.productImageUrl ? (
+                      <img
+                        src={item.productImageUrl}
+                        alt={item.productName}
+                        className="item-image"
+                      />
+                    ) : (
+                      <div className="item-image-placeholder">📦</div>
+                    )}
+                  </div>
 
                   <div className="item-details">
                     <h3>{item.productName}</h3>
                     <p>
                       {item.productDescription || "Description not available"}
                     </p>
-                    <div className="item-price">${item.price}</div>
+                    <div className="item-price">${item.price?.toFixed(2)}</div>
                   </div>
 
-                  <div className="item-quantity">Quantity: {item.quantity}</div>
-
-                  <div className="item-total">
-                    ${(item.price * item.quantity).toFixed(2)}
+                  <div className="item-quantity-price">
+                    <div className="item-quantity">Qty: {item.quantity}</div>
+                    <div className="item-total">
+                      ${(item.price * item.quantity).toFixed(2)}
+                    </div>
                   </div>
 
-                  <button
-                    className="remove-btn"
-                    onClick={() => handleRemoveItem(item.productId)}
-                  >
-                    Remove
-                  </button>
+                  <div className="item-actions">
+                    <button
+                      className="remove-btn"
+                      onClick={() => handleRemoveItem(item.productId)}
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </div>
               );
             })}
@@ -200,9 +228,9 @@ const Cart = () => {
               <button
                 className="checkout-btn"
                 onClick={handleCheckout}
-                disabled={selectedItems.length === 0}
+                disabled={selectedItems.length === 0 || checkoutLoading}
               >
-                Proceed to Checkout
+                {checkoutLoading ? "Creating Order..." : "Proceed to Checkout"}
               </button>
             </div>
           </div>

@@ -37,6 +37,18 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
+              {/* ✅ Checkout route for cart items (no orderId) */}
+              <Route
+                path="/checkout"
+                element={
+                  <ProtectedRoute>
+                    <Checkout />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* ✅ Checkout route for existing orders (with orderId) */}
               <Route
                 path="/checkout/:orderId"
                 element={
@@ -45,6 +57,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="/orders"
                 element={
