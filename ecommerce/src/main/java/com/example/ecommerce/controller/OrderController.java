@@ -61,4 +61,14 @@ public class OrderController {
         
         return ResponseEntity.ok(filteredOrders);
     }
+    
+    // ✅ Cancel order (user can only cancel their own order if still PENDING/PROCESSING)
+    @PutMapping("/{orderId}/user/{userId}/cancel")
+    public ResponseEntity<OrderDTO> cancelOrder(
+            @PathVariable int orderId,
+            @PathVariable Long userId) {
+        OrderDTO cancelledOrder = orderService.cancelOrder(orderId, userId);
+        return ResponseEntity.ok(cancelledOrder);
+    }
+
 }

@@ -208,4 +208,28 @@ public class OrderService {
         List<String> validStatuses = List.of("PENDING", "PAID", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED");
         return validStatuses.contains(status.toUpperCase());
     }
+    
+ // ✅ Cancel an order (user side)
+    @Transactional
+    public OrderDTO cancelOrder(int orderId, Long userId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        // Ensure order belongs to user
+        if (!order.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Access denied: You cannot cancel this order");
+        }
+
+        // Allow cancellation only if order is not already shipped/delivered/cancelled
+        if (!order.getStatus().equalsIgnoreCase("PENDING") &&
+            !order.getStatus().equalsIgnoreCase("PROCESSING")) {
+            throw new RuntimeException("Order cannot be cancelled at this stage");
+        }
+
+        order.setStatus("CANCELLED");
+        Order savedOrder = orderRepository.save(order);
+
+        return convertToDTO(savedOrder);
+    }
+
 }
