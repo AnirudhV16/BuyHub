@@ -270,7 +270,7 @@ VITE_RAZORPAY_KEY=your_razorpay_key_here
 
 ## 📄 License
 
-This project is licensed under the MIT License.
+This project is licensed.
 
 ## 👥 Support
 
@@ -283,4 +283,4 @@ For support and questions:
 ---
 
 **Happy Coding! 🎉**
-"# Ecommerce-frontend" 
+"# Ecommerce-frontend"
