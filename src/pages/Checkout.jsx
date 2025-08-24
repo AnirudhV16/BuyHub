@@ -113,7 +113,7 @@ const Checkout = () => {
     }
 
     if (order.status !== "PENDING") {
-      showSuccess("Payment successful! Redirecting to orders...");
+      showWarning("This order cannot be paid. Status: " + order.status);
       return;
     }
 
@@ -137,11 +137,27 @@ const Checkout = () => {
         razorpayKeyId,
       } = paymentResponse.data;
 
+      const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID || razorpayKeyId;
+
+      if (!razorpayKey) {
+        throw new Error("Razorpay key not configured");
+      }
+
+      if (import.meta.env.DEV) {
+        console.log(
+          "Using Razorpay key source:",
+          import.meta.env.VITE_RAZORPAY_KEY_ID
+            ? "Environment Variable"
+            : "Backend"
+        );
+        console.log("Razorpay key:", razorpayKey);
+      }
+
       const options = {
-        key: razorpayKeyId,
+        key: razorpayKey,
         amount: amount,
         currency: currency,
-        name: "Your Ecommerce Store",
+        name: import.meta.env.VITE_APP_NAME || "Your Ecommerce Store",
         description: `Order #${orderId}`,
         order_id: razorpayOrderId,
         handler: async (response) => {
@@ -160,8 +176,12 @@ const Checkout = () => {
             } else {
               throw new Error("Payment verification failed");
             }
-          } catch {
-            showError("Payment verification failed...");
+          } catch (verifyError) {
+            console.error("Payment verification error:", verifyError);
+            showError(
+              "Payment verification failed. Please contact support with payment ID: " +
+                response.razorpay_payment_id
+            );
           } finally {
             setPaymentLoading(false);
           }
@@ -188,13 +208,17 @@ const Checkout = () => {
 
       const razorpay = new window.Razorpay(options);
 
-      razorpay.on("payment.failed", function () {
-        showError("Failed to initiate payment. Please try again.");
+      razorpay.on("payment.failed", function (response) {
+        console.error("Payment failed:", response.error);
+        showError(
+          `Payment failed: ${response.error.description || "Unknown error"}`
+        );
         setPaymentLoading(false);
       });
 
       razorpay.open();
     } catch (err) {
+      console.error("Payment initiation error:", err);
       setError(
         "Failed to initiate payment: " + (err.response?.data || err.message)
       );
