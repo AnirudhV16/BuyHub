@@ -32,4 +32,16 @@ build/
 ### VS Code ###
 .vscode/
 
-application.properties
+# Environment variables (NEVER commit these)
+.env
+.env.local
+.env.production
+.env.staging
+
+# Docker volumes
+mysql_data/
+app_logs/
+
+# Logs
+logs/
+*.log
