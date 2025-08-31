@@ -3,3 +3,8 @@ builder = "paketobuildpacks/builder:base"
 
 [env]
 JAVA_VERSION = "21"
+PORT = "8081"
+
+[deploy]
+startCommand = "java -jar target/*.jar"
+buildCommand = "./mvnw clean package -DskipTests"
