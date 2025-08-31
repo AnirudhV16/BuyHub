@@ -1,0 +1,5 @@
+[build]
+builder = "paketobuildpacks/builder:base"
+
+[env]
+JAVA_VERSION = "21"
