@@ -14,7 +14,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // allow all API endpoints
-                .allowedOrigins("http://localhost:3000", "http://localhost:5173", "https://ecommerce-frontend-umber-chi-76.vercel.app/")
+                .allowedOrigins("http://localhost:3000", "http://localhost:5173", "https://ecommerce-frontend22-umber-chi-76.vercel.app/")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
