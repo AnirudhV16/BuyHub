@@ -90,7 +90,7 @@ const Products = () => {
             <div className="product-info">
               <h3 className="product-name">{product.name}</h3>
               <p className="product-description">{product.description}</p>
-              <div className="product-price">${product.price}</div>
+              <div className="product-price">₹{product.price}</div>
 
               {/* Show Add to Cart only if user is logged in and is NOT admin */}
               {user && !isAdmin && (
