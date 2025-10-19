@@ -1,6 +1,6 @@
 # 🛍️ BuyHub - Modern E-commerce Platform
 
-A full-stack e-commerce application built with React and Spring Boot, featuring secure payment integration, admin dashboard, and real-time order management.
+A scalable online retail system aimed at helping small businesses manage products, payments, and customer orders efficiently in one place.
 
 <img width="1558" height="763" alt="Screenshot (17)" src="https://github.com/user-attachments/assets/c18ea429-a0c1-4d70-8cf7-652cdfe391aa" />
 
@@ -13,34 +13,58 @@ A full-stack e-commerce application built with React and Spring Boot, featuring 
 
 ## 📹 Demo Video
 
-[🎥 Watch Full Demo]()
+[🎥 Watch Full Demo](https://github.com/user-attachments/assets/06a244fb-4e44-489c-b58c-0407bd5e12d4)
 
-*Upload your demo video to YouTube/Vimeo and replace the link above*
 
 ## 📸 Screenshots
 
-### Customer Features
-<img width="1600" height="900" alt="Screenshot (18)" src="https://github.com/user-attachments/assets/9e1cc8af-5221-41e1-9e40-253668200f3e" />
-*Browse products with card layouts and images*
+### 🛍️ Customer Features
 
-<img width="1587" height="860" alt="Capture5" src="https://github.com/user-attachments/assets/797ebec7-c1d5-4ca9-8fff-367ebbe273a6" />
-*Manage cart items with real-time total calculations*
+<p align="center">
+  <img width="1000" alt="Browse Products" src="https://github.com/user-attachments/assets/9e1cc8af-5221-41e1-9e40-253668200f3e" />
+  <br />
+  <em>Browse products with card layouts and images</em>
+</p>
 
-<img width="1545" height="857" alt="Capture7" src="https://github.com/user-attachments/assets/ad591096-12ee-4408-b9bd-68657617cddb" />
-*Secure payment processing with Razorpay integration*
+<p align="center">
+  <img width="1000" alt="Cart Management" src="https://github.com/user-attachments/assets/797ebec7-c1d5-4ca9-8fff-367ebbe273a6" />
+  <br />
+  <em>Manage cart items with real-time total calculations</em>
+</p>
 
-<img width="1586" height="859" alt="Capture6" src="https://github.com/user-attachments/assets/e828061b-8db5-40b5-b099-b8c623c64a27" />
-*Track your orders with visual progress indicators*
+<p align="center">
+  <img width="1000" alt="Secure Payment" src="https://github.com/user-attachments/assets/ad591096-12ee-4408-b9bd-68657617cddb" />
+  <br />
+  <em>Secure payment processing with Razorpay integration</em>
+</p>
 
-### Admin Features
-<img width="1586" height="862" alt="Capture4" src="https://github.com/user-attachments/assets/e718769f-be2c-4976-bd97-ddaf55b475d8" />
-*Comprehensive admin dashboard with statistics*
+<p align="center">
+  <img width="1000" alt="Order Tracking" src="https://github.com/user-attachments/assets/e828061b-8db5-40b5-b099-b8c623c64a27" />
+  <br />
+  <em>Track your orders with visual progress indicators</em>
+</p>
 
-<img width="1588" height="860" alt="capture3" src="https://github.com/user-attachments/assets/7b3491d5-63bd-421f-ace1-fd715eb9068d" />
-*Manage products with image upload and CRUD operations*
+---
 
-<img width="1587" height="863" alt="Capture1" src="https://github.com/user-attachments/assets/65ce978f-2a9e-4178-b4a9-d211270f2041" />
-*Track and update order statuses*
+### 👨‍💼 Admin Features
+
+<p align="center">
+  <img width="1000" alt="Product Management" src="https://github.com/user-attachments/assets/7b3491d5-63bd-421f-ace1-fd715eb9068d" />
+  <br />
+  <em>Comprehensive admin dashboard with statistics</em>
+</p>
+
+<p align="center">
+  <img width="1000" alt="Admin Dashboard" src="https://github.com/user-attachments/assets/e718769f-be2c-4976-bd97-ddaf55b475d8" />
+  <br />
+  <em>Manage products with image upload and CRUD operations</em>
+</p>
+
+<p align="center">
+  <img width="1000" alt="Order Status Update" src="https://github.com/user-attachments/assets/65ce978f-2a9e-4178-b4a9-d211270f2041" />
+  <br />
+  <em>Track and update order statuses</em>
+</p>
 
 ## ✨ Features
 
