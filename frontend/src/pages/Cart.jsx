@@ -184,13 +184,13 @@ const Cart = () => {
                     <p>
                       {item.productDescription || "Description not available"}
                     </p>
-                    <div className="item-price">${item.price?.toFixed(2)}</div>
+                    <div className="item-price">₹{item.price?.toFixed(2)}</div>
                   </div>
 
                   <div className="item-quantity-price">
                     <div className="item-quantity">Qty: {item.quantity}</div>
                     <div className="item-total">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      ₹{(item.price * item.quantity).toFixed(2)}
                     </div>
                   </div>
 
