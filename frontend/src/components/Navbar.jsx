@@ -26,7 +26,7 @@ const Navbar = () => {
       <div className="nav-container">
         <Link to="/" className="nav-logo">
           <span className="logo-icon">🛍️</span>
-          EcomStore
+          BuyHub
         </Link>
 
         <div className={`nav-menu ${isMenuOpen ? "active" : ""}`}>
