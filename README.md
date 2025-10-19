@@ -191,7 +191,7 @@ BuyHub/
 
 ## 📧 Contact
 
-**Anirudh** - [Vennapusaani1629@gmail.com](mailto:vennapusaani1629@gmail.com)
+**Anirudh** - [Vennapusaani1629@gmail.com](https://mail.google.com/mail/?view=cm&fs=1&to=Vennapusaani1629@gmail.com)
 
 **Project Link**: [https://github.com/AnirudhV16/BuyHub](https://github.com/AnirudhV16/BuyHub)
 
