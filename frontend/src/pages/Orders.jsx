@@ -187,9 +187,9 @@ const Orders = () => {
                       </span>
                     </div>
                     <div className="item-price">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      ₹{(item.price * item.quantity).toFixed(2)}
                       <span className="unit-price">
-                        (${item.price.toFixed(2)} each)
+                        (₹{item.price.toFixed(2)} each)
                       </span>
                     </div>
                   </div>
@@ -198,7 +198,7 @@ const Orders = () => {
 
               <div className="order-footer">
                 <div className="order-total">
-                  <strong>Total: ${order.totalPrice.toFixed(2)}</strong>
+                  <strong>Total: ₹{order.totalPrice.toFixed(2)}</strong>
                 </div>
                 <div className="order-actions">
                   {/* Only show Cancel button for PENDING orders */}
