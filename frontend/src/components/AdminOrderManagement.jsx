@@ -125,12 +125,12 @@ const AdminOrderManagement = () => {
   };
 
   const formatCurrency = (amount) => {
-    if (amount === null || amount === undefined) return "₹0.00";
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(Number(amount));
-  };
+  if (amount === null || amount === undefined) return "₹0.00";
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+  }).format(Number(amount));
+};
 
   const getStatusCount = (status) => {
     if (!orderStats) return 0;
