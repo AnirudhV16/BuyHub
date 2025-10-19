@@ -268,7 +268,7 @@ const Checkout = () => {
                   <div key={index} className="order-item">
                     <span>{item.product.name}</span>
                     <span>Qty: {item.quantity}</span>
-                    <span>${(item.price * item.quantity).toFixed(2)}</span>
+                    <span>₹{(item.price * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
               </div>
@@ -278,7 +278,7 @@ const Checkout = () => {
                 <div className="payment-info">
                   <div className="payment-row">
                     <span>Subtotal:</span>
-                    <span>${order.totalPrice.toFixed(2)}</span>
+                    <span>₹{order.totalPrice.toFixed(2)}</span>
                   </div>
                   <div className="payment-row">
                     <span>Shipping:</span>
@@ -286,7 +286,7 @@ const Checkout = () => {
                   </div>
                   <div className="payment-row total">
                     <span>Total:</span>
-                    <span>${order.totalPrice.toFixed(2)}</span>
+                    <span>₹{order.totalPrice.toFixed(2)}</span>
                   </div>
                 </div>
 
