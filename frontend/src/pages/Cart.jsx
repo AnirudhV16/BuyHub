@@ -216,7 +216,7 @@ const Cart = () => {
               </div>
               <div className="summary-row total">
                 <span>Total:</span>
-                <span>${calculateTotal()}</span>
+                <span>₹{calculateTotal()}</span>
               </div>
               <button
                 className="checkout-btn"
