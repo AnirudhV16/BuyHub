@@ -1,4 +1,4 @@
-# 🛍️ BuyHub - Modern E-commerce Platform
+# 🛍️ BuyHub - Starter Hub for Online Selling
 
 A scalable online retail system aimed at helping small businesses manage products, payments, and customer orders efficiently in one place.
 
