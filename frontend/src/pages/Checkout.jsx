@@ -74,7 +74,7 @@ const Checkout = () => {
     for (let field of required) {
       if (!billingDetails[field].trim()) {
         showWarning(
-          `Please fill in ${field.replace(/([A-Z])/g, " $1").toLowerCase()}`
+          `Please fill in ${field.replace(/([A-Z])/g, " ₹1").toLowerCase()}`
         );
         return false;
       }
@@ -299,7 +299,7 @@ const Checkout = () => {
                     ? "Processing..."
                     : order.status !== "PENDING"
                     ? `Order ${order.status}`
-                    : `Pay $${order.totalPrice.toFixed(2)}`}
+                    : `Pay ₹${order.totalPrice.toFixed(2)}`}
                 </button>
               </div>
             </div>
