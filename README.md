@@ -1,4 +1,4 @@
-# 🛍️ BuyHub - Starter Hub for Online Selling
+# 🛍️ BuyHub - Hub for Online Shoping
 
 A scalable online retail system aimed at helping small businesses manage products, payments, and customer orders efficiently in one place.
 
